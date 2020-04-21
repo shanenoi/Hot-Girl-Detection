@@ -42,6 +42,18 @@ class WebControl(object):
 class CrawlingJs(object):
     
     crawling_by_js = {
+        "friends": {
+            "type": "str",
+            "function": "document.querySelectorAll",
+            "value": '[data-tab-key="friends"]',
+            "attribute": "item(0).click()"
+        },
+        "images": {
+            "type": "str",
+            "function": "document.querySelectorAll",
+            "value": '[data-tab-key="photos"]',
+            "attribute": "item(0).click()"
+        },
         "list_friends": {
             "type": "list",
             "function": "document.getElementsByClassName",
@@ -71,21 +83,16 @@ class CrawlingJs(object):
         }
     }
     
-    default_link = {
-        "list_friends": "https://www.facebook.com/{}/friends",
-        "list_images": "https://www.facebook.com/{}/photos"
-    }
-    
     @staticmethod
     def convert_jsScript(meta: dict) -> str:
         if meta['type'] == 'list':
             return (
-                'temp = {}("{}");\n' +
-                'result = [];\n'
-                'for(var i=0; i<temp.length; i++) {{\n' +
-                '    result.push(temp[i].{})\n' +
-                '}}\n' +
-                'return result;'
+                """temp = {}('{}');\n""" +
+                """result = [];\n""" +
+                """for(var i=0; i<temp.length; i++) {{\n""" +
+                """    result.push(temp[i].{})\n""" +
+                """}}\n""" +
+                """return result;"""
             ).format(
                 meta['function'],
                 meta['value'],
@@ -93,20 +100,20 @@ class CrawlingJs(object):
             )
         
         elif meta['type'] == 'str':
-            return 'return {}("{}").{}'.format(
+            return """return {}('{}').{}""".format(
                 meta['function'],
                 meta['value'],
                 meta['attribute']
             )
         
         elif meta['type'] == 'void':
-            return "return {}({})".format(
+            return """{}({})""".format(
                 meta['function'],
                 meta['value']
             )
         
         elif meta['type'] == 'attribute':
-            return "return {}".format(
+            return """return {}""".format(
                 meta['function']
             )
 
@@ -132,24 +139,9 @@ class CurrentTask(object):
 
     def add(self, container) -> None:
         self.file.write(
-            self.hash_object(container)
+            str(container)
         )
-
-        
-    @staticmethod
-    def __hash(value, p_num: int = 3264) -> str:
-        ar = [str(ord(i)) for i in str(value)]
-        temp = sorted([int(''.join(ar)), p_num])
-        temp = str(temp[0] / temp[1])
-        return temp.replace('e-', '').replace('.', '')
-
-    
-    def hash_object(self, value):
-        return self.__hash(str(
-            value.__repr__()
-        ))
-
     
     def isdone(self, container) -> bool:
         self.file.seek(0)
-        return self.hash_object(container) in self.file.read()
+        return str(container) in self.file.read()
