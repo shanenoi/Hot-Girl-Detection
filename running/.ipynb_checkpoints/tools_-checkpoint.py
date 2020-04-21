@@ -106,7 +106,9 @@ class CrawlingJs(object):
             )
         
         elif meta['type'] == 'attribute':
-            return meta['function']
+            return "return {}".format(
+                meta['function']
+            )
 
 
 # In[5]:
@@ -151,33 +153,3 @@ class CurrentTask(object):
     def isdone(self, container) -> bool:
         self.file.seek(0)
         return self.hash_object(container) in self.file.read()
-
-
-# In[6]:
-
-
-class Person(object):
-    
-    def __init__(
-        self, name: str,
-        friends: list,
-        pics: list
-    ):
-        self.name = name
-        self.friends = friends
-        self.pics = pics
-
-        
-    @staticmethod
-    def get_image_name_and_size(url: str) -> list:
-        full_url = re.findall('(https://[^()]+)', url)[0]
-        result = re.findall('(\d+x\d+)|(\w+.jpg)',full_url)
-        return [
-            f'{result[0][0]}__{result[1][1]}',
-            full_url
-        ]
-
-    
-    @staticmethod
-    def get_friend_name(url: str) -> str:
-        return re.findall('https://www.facebook.com/((profile\.php\?id=\d+)|([^/?]+))', url)[0][0]
