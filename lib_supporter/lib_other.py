@@ -131,17 +131,59 @@ class CurrentTask(object):
         [-] Come from https://github.com/shanenoi/Crawling/blob/master/lib_for_crawling.py#L33
     """
 
-    def __init__(self, file_name: str):
+    def __init__(self, section_id: str):
+        """
+            * define inital section id
+        """
+        self.file = None
+        self.section = section_id
+
+    def source(self, file_name: str) -> None:
+        """
+            * Specify source to save processes
+        """
         try:
             self.file = open(file_name, 'r+')
         except FileNotFoundError:
             self.file = open(file_name, 'w+')
 
-    def add(self, container) -> None:
-        self.file.write(
-            str(container)
+    @staticmethod
+    def __crossbreed(sentence1: str, sentence2: str) -> str:
+        sentence1, sentence2 = (
+            [sentence2, sentence1]
+            if len(sentence1) < len(sentence2)
+            else [sentence1, sentence2]
         )
+        result = ''
+        for index in range(len(sentence1)):
+            if index < len(sentence2):
+                result += chr(
+                    ord(sentence1[index]) + ord(sentence2[index])
+                )
+            else:
+                result += chr(
+                    ord(sentence1[index]) + 32 # space
+                )
+        return result
+
+    def add(self, container: object) -> None:
+        """
+            * Save process name what you done
+        """
+        if not self.isdone(container):
+            self.file.write(
+                self.__crossbreed(
+                    self.section, str(container)
+                )
+            )
+        else:
+            print(f"[{self.section}]: {container} is available!")
     
-    def isdone(self, container) -> bool:
+    def isdone(self, container: object) -> bool:
+        """
+            * Check this process
+        """
         self.file.seek(0)
-        return str(container) in self.file.read()
+        return self.__crossbreed(
+                self.section, str(container)
+        ) in self.file.read()
